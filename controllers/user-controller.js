@@ -3,6 +3,26 @@ import { validationResult } from "express-validator";
 import router from "../route/index.js";
 
 export class UserController {
+  setCookies(userData, state) {
+    const message =
+      state === "login"
+        ? "Пользователь с таким именем уже существует"
+        : "Пользователь не авторизован";
+
+    if (userData) {
+      res.cookie("refreshToken", userData.refreshToken, {
+        maxAge: 3600000,
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+      });
+
+      return res.status(200).json(userData);
+    } else {
+      return res.status(401).json({ message: message });
+    }
+  }
+
   async logIn(req, res, next) {
     try {
       const errors = validationResult(req);
@@ -15,20 +35,7 @@ export class UserController {
       const { name } = req.body;
       const userData = await userService.logIn(name);
 
-      if (userData) {
-        res.cookie("refreshToken", userData.refreshToken, {
-          maxAge: 3600000,
-          httpOnly: true,
-          sameSite: "none",
-          secure: true,
-        });
-
-        return res.status(200).json(userData);
-      } else {
-        return res
-          .status(401)
-          .json({ message: "Пользователь с таким именем уже существует" });
-      }
+      return this.setCookies(userData, "login");
     } catch (error) {
       console.log(error);
     }
@@ -49,16 +56,7 @@ export class UserController {
       const { refreshToken } = req.cookies;
       const userData = await userService.refresh(refreshToken);
 
-      res.cookie(
-        "user",
-        { id: userData.id, refreshToken: userData.refreshToken },
-        {
-          maxAge: 3600000,
-          httpOnly: true,
-        }
-      );
-
-      return res.status(200).json(userData);
+      return this.setCookies(userData, "refresh");
     } catch (error) {}
   }
 
@@ -67,26 +65,6 @@ export class UserController {
       const users = await userService.getUsers();
       return res.status(200).json(users);
     } catch (error) {}
-  }
-
-  async startGame(req, res, next) {
-    const { refreshToken } = req.cookies;
-    const userToConnect = await userService.startGame(refreshToken);
-    let wsLink;
-
-    if (userToConnect) {
-      wsLink = `/game/:${userToConnect._id}`;
-      router.ws(wsLink, userService.game);
-    } else {
-      wsLink = `/game/:${id}`;
-      router.ws(wsLink, userService.game);
-    }
-
-    return res.status(200).json(wsLink);
-  }
-
-  game(ws, req) {
-    ws.on();
   }
 }
 
