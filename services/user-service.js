@@ -22,7 +22,6 @@ class UserService {
     }
 
     const user = await ModelUser.create({ name });
-
     return this.updateUser(user);
   }
 

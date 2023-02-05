@@ -5,11 +5,15 @@ import { gameController } from "../controllers/game-controller.js";
 import { body } from "express-validator";
 
 const router = new Router();
-expressWs(router);
+export const wsRouter = expressWs(router);
 
-router.post("/login", body("name").isLength({ min: 3 }), userController.logIn);
+router.post(
+  "/login",
+  body("name").isLength({ min: 3 }),
+  userController.logIn.bind(userController)
+);
 router.delete("/logout", userController.logOut);
-router.get("/refresh", userController.refreshToken);
+router.get("/refresh", userController.refreshToken.bind(userController));
 router.get("/getusers", userController.getUsers);
 router.get("/startgame", gameController.startGame);
 // router.ws("/game/:id", userController.game);

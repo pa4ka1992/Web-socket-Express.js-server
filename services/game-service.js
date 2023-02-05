@@ -1,7 +1,11 @@
+import { tokenService } from "../services/token-service.js";
+import { userService } from "./user-service.js";
+import { ModelUser } from "../models/user-model.js";
+
 class GameService {
   async startGame(refreshToken) {
     const userData = tokenService.validateRefreshToken(refreshToken);
-    const users = await this.getUsers();
+    const users = await userService.getUsers();
     const opponent = users.find((user) => !!user.isWaitingGame);
 
     if (opponent) {
@@ -17,7 +21,7 @@ class GameService {
   }
 
   initSocket(ws, req) {
-    console.log("вебсокет");
+    console.log('asasdasdasdaasdasda');
   }
 }
 
