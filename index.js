@@ -5,12 +5,13 @@ import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import router from "./route/index.js";
+import { WsController } from "./controllers/websocket-controller.js";
 
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 const app = express();
-const wsRouter = expressWs(app);
+const wsInstance = expressWs(app);
 
 app.use(express.json());
 app.use(
@@ -22,12 +23,9 @@ app.use(
 app.use(cookieParser());
 app.use("/api", router);
 
-app.ws("/game", function (ws, req) {
-  console.log('connected');
-  ws.on("message", function (msg) {
-    ws.send(msg);
-  });
-});
+const wsController = new WsController(wsInstance);
+
+app.ws("/game", wsController.webSocketHandler.bind(wsController));
 
 const init = async () => {
   try {
