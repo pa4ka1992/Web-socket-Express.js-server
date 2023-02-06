@@ -12,18 +12,11 @@ export class GameController {
 
     if (userToConnect) {
       wsId = userToConnect._id;
-      await router.ws(`/${wsId}`, gameService.initSocket);
-      console.log(wsRouter);
-      return res.status(200).json(wsId);
-
     } else {
       wsId = userData.id;
-      await router.ws(`/${wsId}`, gameService.initSocket);
-      console.log(wsRouter);
-      return res.status(200).json(wsId);
     }
 
-
+    return res.status(200).json(wsId);
   }
 }
 

@@ -21,7 +21,7 @@ class GameService {
   }
 
   initSocket(ws, req) {
-    console.log('asasdasdasdaasdasda');
+
   }
 }
 

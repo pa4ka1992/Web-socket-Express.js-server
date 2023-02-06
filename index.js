@@ -1,4 +1,5 @@
 import * as dotenv from "dotenv";
+import expressWs from "express-ws";
 import express from "express";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
@@ -9,6 +10,7 @@ dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 const app = express();
+const wsRouter = expressWs(app);
 
 app.use(express.json());
 app.use(
@@ -19,6 +21,13 @@ app.use(
 );
 app.use(cookieParser());
 app.use("/api", router);
+
+app.ws("/game", function (ws, req) {
+  console.log('connected');
+  ws.on("message", function (msg) {
+    ws.send(msg);
+  });
+});
 
 const init = async () => {
   try {

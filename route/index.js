@@ -16,6 +16,5 @@ router.delete("/logout", userController.logOut);
 router.get("/refresh", userController.refreshToken.bind(userController));
 router.get("/getusers", userController.getUsers);
 router.get("/startgame", gameController.startGame);
-// router.ws("/game/:id", userController.game);
 
 export default router;
