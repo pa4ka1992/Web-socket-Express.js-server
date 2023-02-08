@@ -18,34 +18,43 @@ export class WsController {
           this.readyHandler(ws, msg);
           break;
 
-        case "shot":
+        case "shoot":
           this.shotHandler(ws, msg);
           break;
 
-        case "gameOver":
-          this.gameOverHandler(ws, msg);
+        case "exit":
+          this.exitHandler(ws, msg);
           break;
       }
     });
   }
 
   connectHandler(ws, msg) {
-    ws.userId = msg.userId;
-    ws.gameId = msg.gameId;
+    const { gameId, user } = msg;
 
-    const game = this.games[msg.gameId];
+    ws.gameId = gameId;
+    ws.nickName = user.name;
+
+    const game = this.games[gameId];
 
     if (!game) {
-      game = [ws];
+      ws.isAbleShoot = true;
+      this.games[gameId] = [ws];
+
+      msg.isGameFinded = false;
+      msg.isAbleShoot = true;
     }
 
     if (game.length < 2) {
+      ws.isAbleShoot = false;
       game.push(ws);
-      msg.startGame = true;
+
+      msg.isGameFinded = true;
+      msg.isAbleShoot = false;
     }
 
     if (game.length === 2) {
-      const replaceUser = game.findIndex((user) => user.userId === msg.userId);
+      const replaceUser = game.findIndex((ws) => ws.nickName === user.name);
       if (replaceUser >= 0) {
         game[replaceUser] = [ws];
       }
@@ -54,9 +63,48 @@ export class WsController {
     this.connectBroadcast(ws, msg);
   }
 
+  readyHandler(ws, msg) {
+    const { user, field, gameId } = msg;
+    const game = this.games[gameId];
+
+    game.forEach((ws) => {
+      if (ws.nickname === user.name) {
+        ws.field = field.flat();
+      }
+    });
+
+    const isStarted = game.every((ws) => ws.field);
+
+    msg.isStarted = isStarted;
+    msg.method = "start";
+
+    this.connectBroadcast(ws, msg);
+  }
+
+  shotHandler(ws, msg) {
+    const { gameId, user, coordinates } = msg;
+    const game = this.games[gameId];
+    const damageUser = game.find((ws) => ws.nickName !== user.name);
+
+    damageUser.field = damageUser.field.filter((cell) => cell !== coordinates);
+
+    if (game.some((ws) => ws.field.length)) {
+      msg.method = "gameOver";
+    }
+
+    this.connectBroadcast(ws, msg);
+  }
+
+  exitHandler(ws, msg) {
+    const { gameId } = msg;
+    delete this.games[gameId];
+  }
+
   connectBroadcast(ws, msg) {
+    const { gameId } = msg;
+
     this.info.clients.forEach((client) => {
-      if (client.gameId === msg.gameId) {
+      if (client.gameId === gameId) {
         client.send(JSON.stringify(msg));
       }
     });

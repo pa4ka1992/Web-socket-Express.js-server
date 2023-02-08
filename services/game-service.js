@@ -17,11 +17,7 @@ class GameService {
       await ModelUser.updateOne({ _id: userData.id }, { isWaitingGame: true });
     }
 
-    return opponent;
-  }
-
-  initSocket(ws, req) {
-
+    return { opponent };
   }
 }
 
