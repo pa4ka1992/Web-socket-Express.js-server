@@ -25,7 +25,6 @@ export class UserController {
   async logIn(req, res, next) {
     try {
       const errors = validationResult(req);
-      console.log(errors);
 
       if (!errors.isEmpty()) {
         return res.status(403).json({ message: "Имя слишком короткое" });
@@ -36,7 +35,7 @@ export class UserController {
 
       return this.setCookies(userData, res, "login");
     } catch (error) {
-      console.log(error);
+      return res.status(403).json({ message: "Ошибка авторизации" });
     }
   }
 
@@ -51,7 +50,9 @@ export class UserController {
         secure: true,
       });
       return res.status(200).json({ message: "Пользователь удален" });
-    } catch (error) {}
+    } catch (error) {
+      return res.status(403).json({ message: "Ошибка выхода" });
+    }
   }
 
   async refreshToken(req, res, next) {
@@ -60,14 +61,18 @@ export class UserController {
       const userData = await userService.refresh(refreshToken);
 
       return this.setCookies(userData, res, "refresh");
-    } catch (error) {}
+    } catch (error) {
+      return res.status(403).json({ message: "Ошибка обновления токена" });
+    }
   }
 
   async getUsers(req, res, next) {
     try {
       const users = await userService.getUsers();
       return res.status(200).json(users);
-    } catch (error) {}
+    } catch (error) {
+      return res.status(500).json({ message: "Ошибка получения пользователей" });
+    }
   }
 }
 
