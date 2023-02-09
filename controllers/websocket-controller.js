@@ -7,7 +7,7 @@ export class WsController {
 
   webSocketHandler(ws, req) {
     ws.on("message", (msg) => {
-      msg = JSON.parse(msg);
+      msg = JSON.parse(msg.toString());
 
       switch (msg.method) {
         case "connection":
@@ -43,23 +43,19 @@ export class WsController {
 
       msg.isGameFinded = false;
       msg.isAbleShoot = true;
-    }
-
-    if (game.length < 2) {
+    } else if (game.length < 2) {
       ws.isAbleShoot = false;
       game.push(ws);
 
       msg.isGameFinded = true;
       msg.isAbleShoot = false;
-    }
-
-    if (game.length === 2) {
+    } else if (game.length === 2) {
       const replaceUser = game.findIndex((ws) => ws.nickName === user.name);
       if (replaceUser >= 0) {
         game[replaceUser] = [ws];
       }
     }
-
+  
     this.connectBroadcast(ws, msg);
   }
 
