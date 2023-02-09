@@ -1,5 +1,6 @@
 import { userService } from "../services/user-service.js";
 import { validationResult } from "express-validator";
+import { ApiError } from "../exeptions/api-eror.js";
 
 export class UserController {
   setCookies(userData, res, state) {
@@ -9,16 +10,17 @@ export class UserController {
         : "Пользователь не авторизован";
 
     if (userData) {
-      res.cookie("refreshToken", userData.refreshToken, {
-        maxAge: 3600000000,
-        httpOnly: true,
-        sameSite: "none",
-        secure: true,
-      });
-
-      return res.status(200).json(userData);
+      return res
+        .status(200)
+        .cookie("refreshToken", userData.refreshToken, {
+          maxAge: 3600000000,
+          httpOnly: true,
+          sameSite: "none",
+          secure: true,
+        })
+        .json(userData);
     } else {
-      return res.status(401).json({ message: message });
+      throw ApiError.AuthorizationError(message);
     }
   }
 
@@ -27,7 +29,7 @@ export class UserController {
       const errors = validationResult(req);
 
       if (!errors.isEmpty()) {
-        return res.status(403).json({ message: "Имя слишком короткое" });
+        throw ApiError.ShortNameError();
       }
 
       const { name } = req.body;
@@ -35,7 +37,7 @@ export class UserController {
 
       return this.setCookies(userData, res, "login");
     } catch (error) {
-      return res.status(403).json({ message: "Ошибка авторизации" });
+      next(error);
     }
   }
 
@@ -44,14 +46,16 @@ export class UserController {
       const { refreshToken } = req.cookies;
       const token = await userService.logOut(refreshToken);
 
-      res.clearCookie(refreshToken, {
-        httpOnly: true,
-        sameSite: "none",
-        secure: true,
-      });
-      return res.status(200).json({ message: "Пользователь удален" });
+      return res
+        .clearCookie(refreshToken, {
+          httpOnly: true,
+          sameSite: "none",
+          secure: true,
+        })
+        .status(200)
+        .json({ message: "Пользователь удален" });
     } catch (error) {
-      return res.status(403).json({ message: "Ошибка выхода" });
+      next(error);
     }
   }
 
@@ -62,7 +66,7 @@ export class UserController {
 
       return this.setCookies(userData, res, "refresh");
     } catch (error) {
-      return res.status(403).json({ message: "Ошибка обновления токена" });
+      next(error);
     }
   }
 
@@ -71,7 +75,7 @@ export class UserController {
       const users = await userService.getUsers();
       return res.status(200).json(users);
     } catch (error) {
-      return res.status(500).json({ message: "Ошибка получения пользователей" });
+      next(error);
     }
   }
 }

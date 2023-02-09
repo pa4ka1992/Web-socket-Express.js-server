@@ -1,5 +1,6 @@
 import { ModelUser } from "../models/user-model.js";
 import { tokenService } from "./token-service.js";
+import { ApiError } from "../exeptions/api-eror.js";
 
 class UserService {
   async updateUser(user) {
@@ -11,18 +12,27 @@ class UserService {
 
     await tokenService.saveToken(user._id, tokens.refreshToken);
 
-    return { ...tokens, ...resUser };
+    if (tokens && resUser) {
+      return { ...tokens, ...resUser };
+    } else {
+      throw ApiError.TokenError();
+    }
   }
 
   async logIn(name) {
     const candidate = await ModelUser.findOne({ name });
 
     if (candidate) {
-      return undefined;
+      throw ApiError.DoubleNameError();
     }
 
     const user = await ModelUser.create({ name });
-    return this.updateUser(user);
+
+    if (user) {
+      return this.updateUser(user);
+    } else {
+      throw ApiError.AuthorizationError("Ошибка создания пользователя");
+    }
   }
 
   async logOut(refreshToken) {
@@ -30,19 +40,26 @@ class UserService {
     const user = await ModelUser.deleteOne({ _id: userData.id });
     const token = await tokenService.removeToken(refreshToken);
 
-    return { user, token };
+    if (!user || !token) {
+      throw ApiError.ExitError();
+    }
   }
 
   async refresh(refreshToken) {
     if (!refreshToken) {
-      return undefined;
+      throw ApiError.TokenError();
     }
 
     const userData = tokenService.validateRefreshToken(refreshToken);
     const tokenInDB = await tokenService.findToken(refreshToken);
 
-    if (!userData || !tokenInDB) {
-      return undefined;
+    if (!userData) {
+      const token = await tokenService.removeToken(refreshToken);
+      throw ApiError.TokenError();
+    }
+
+    if (userData && !tokenInDB) {
+      throw ApiError.TokenError();
     }
 
     const user = await ModelUser.findById(userData.id);
@@ -52,6 +69,11 @@ class UserService {
 
   async getUsers() {
     const users = await ModelUser.find();
+
+    if (!users) {
+      throw ApiError.GetUsersError();
+    }
+
     return users;
   }
 }

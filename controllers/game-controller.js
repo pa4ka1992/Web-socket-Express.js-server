@@ -27,7 +27,7 @@ export class GameController {
         });
       }
     } catch (error) {
-      return res.status(500).json({ message: "Ошибка на сервере" });
+      next(error);
     }
   }
 }

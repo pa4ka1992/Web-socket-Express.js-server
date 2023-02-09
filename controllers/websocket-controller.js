@@ -19,7 +19,7 @@ export class WsController {
           break;
 
         case "shoot":
-          this.shotHandler(ws, msg);
+          this.shootHandler(ws, msg);
           break;
 
         case "exit":
@@ -44,18 +44,29 @@ export class WsController {
       msg.isGameFinded = false;
       msg.isAbleShoot = true;
     } else if (game.length < 2) {
-      ws.isAbleShoot = false;
-      game.push(ws);
-
-      msg.isGameFinded = true;
-      msg.isAbleShoot = false;
+      const replaceUser = game.findIndex((ws) => ws.nickName === user.name);
+      if (replaceUser >= 0) {
+        game[replaceUser] = ws;
+        ws.isAbleShoot = true;
+        msg.isAbleShoot = true;
+        msg.isGameFinded = false;
+      } else {
+        ws.isAbleShoot = false;
+        msg.isAbleShoot = false;
+        msg.isGameFinded = true;
+        game.push(ws);
+      }
     } else if (game.length === 2) {
       const replaceUser = game.findIndex((ws) => ws.nickName === user.name);
       if (replaceUser >= 0) {
-        game[replaceUser] = [ws];
+        ws.isAbleShoot = game[replaceUser].isAbleShoot;
+        ws.isGameFinded = game[replaceUser].isGameFinded;
+        game[replaceUser] = ws;
       }
     }
-  
+
+    console.log(msg);
+
     this.connectBroadcast(ws, msg);
   }
 
@@ -77,7 +88,7 @@ export class WsController {
     this.connectBroadcast(ws, msg);
   }
 
-  shotHandler(ws, msg) {
+  shootHandler(ws, msg) {
     const { gameId, user, coordinates } = msg;
     const game = this.games[gameId];
     const damageUser = game.find((ws) => ws.nickName !== user.name);
@@ -94,6 +105,7 @@ export class WsController {
   exitHandler(ws, msg) {
     const { gameId } = msg;
     delete this.games[gameId];
+    this.connectBroadcast(ws, msg);
   }
 
   connectBroadcast(ws, msg) {
