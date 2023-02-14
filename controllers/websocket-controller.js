@@ -80,9 +80,13 @@ export class WsController {
       }
     });
 
-    const isStarted = game.every((ws) => ws.field);
+    if (game.length === 2) {
+      const isStarted = game.every((ws) => ws.field);
+      msg.isStarted = isStarted;
+    } else {
+      msg.isStarted = false;
+    }
 
-    msg.isStarted = isStarted;
     msg.method = "start";
 
     this.connectBroadcast(ws, msg);
