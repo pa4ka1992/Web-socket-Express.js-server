@@ -7,25 +7,8 @@ export class GameController {
   async startGame(req, res, next) {
     try {
       const { refreshToken } = req.cookies;
-      const userData = tokenService.validateRefreshToken(refreshToken);
-      const { opponent } = await gameService.startGame(refreshToken);
-      let wsId;
-
-      if (opponent) {
-        wsId = opponent._id;
-
-        return res.status(200).json({
-          gameId: wsId,
-          user: { id: userData.id, name: userData.name },
-        });
-      } else {
-        wsId = userData.id;
-
-        return res.status(200).json({
-          gameId: wsId,
-          user: { id: userData.id, name: userData.name },
-        });
-      }
+      const response = await gameService.startGame(refreshToken);
+      return res.status(200).json(response);
     } catch (error) {
       next(error);
     }

@@ -6,18 +6,46 @@ class GameService {
   async startGame(refreshToken) {
     const userData = tokenService.validateRefreshToken(refreshToken);
     const users = await userService.getUsers();
-    const opponent = users.find((user) => !!user.isWaitingGame);
+
+    const reconnectUser = users.find(
+      (user) => userData.id === user._id.toString() && !!user.gameId
+    );
+
+    if (reconnectUser) {
+      return {
+        gameId: reconnectUser.gameId,
+        user: { id: userData.id, name: userData.name },
+      };
+    }
+
+    const opponent = users.find((user) => user.isWaitingGame);
+    let gameId;
 
     if (opponent) {
+      gameId = opponent.gameId;
+
       await ModelUser.updateOne(
         { _id: opponent._id },
         { isWaitingGame: false }
       );
+
+      await ModelUser.updateOne(
+        { _id: userData.id },
+        { gameId: gameId }
+      );
     } else {
-      await ModelUser.updateOne({ _id: userData.id }, { isWaitingGame: true });
+      gameId = userData.id;
+
+      await ModelUser.updateOne(
+        { _id: userData.id },
+        { isWaitingGame: true, gameId: userData.id }
+      );
     }
 
-    return { opponent };
+    return {
+      gameId: gameId,
+      user: { id: userData.id, name: userData.name },
+    };
   }
 }
 

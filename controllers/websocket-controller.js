@@ -1,3 +1,5 @@
+import { ModelUser } from "../models/user-model.js";
+
 export class WsController {
   constructor(wsInstance) {
     this.wsInstance = wsInstance;
@@ -30,6 +32,7 @@ export class WsController {
   }
 
   connectHandler(ws, msg) {
+    console.log("connect");
     const { gameId, user } = msg;
 
     ws.gameId = gameId;
@@ -38,76 +41,74 @@ export class WsController {
     const game = this.games[gameId];
 
     if (!game) {
-      ws.isAbleShoot = true;
-      this.games[gameId] = [ws];
+      msg.isAbleShoot = ws.isAbleShoot = true;
+      msg.isGameFinded = ws.isGameFinded = false;
 
-      msg.isGameFinded = false;
-      msg.isAbleShoot = true;
+      this.games[gameId] = [ws];
     } else if (game.length < 2) {
-      const replaceUser = game.findIndex((ws) => ws.nickName === user.name);
-      if (replaceUser >= 0) {
-        game[replaceUser] = ws;
-        ws.isAbleShoot = true;
-        msg.isAbleShoot = true;
-        msg.isGameFinded = false;
-      } else {
-        ws.isAbleShoot = false;
-        msg.isAbleShoot = false;
-        msg.isGameFinded = true;
+      const isReconnect = this.reconnect(game, ws, user, msg);
+
+      if (!isReconnect) {
+        msg.isAbleShoot = ws.isAbleShoot = false;
+
+        msg.opponentName = this.games[gameId][0].nickName;
         game.push(ws);
+
+        msg.isGameFinded = true;
+        game.forEach((wss) => {
+          wss.isGameFinded = true;
+        });
       }
     } else if (game.length === 2) {
-      const replaceUser = game.findIndex((ws) => ws.nickName === user.name);
-      if (replaceUser >= 0) {
-        ws.isAbleShoot = game[replaceUser].isAbleShoot;
-        ws.isGameFinded = game[replaceUser].isGameFinded;
-        game[replaceUser] = ws;
-      }
+      this.reconnect(game, ws, user, msg);
     }
-
-    console.log(msg);
 
     this.connectBroadcast(ws, msg);
   }
 
   readyHandler(ws, msg) {
+    msg.method = "start";
+    console.log("ready");
     const { user, field, gameId } = msg;
     const game = this.games[gameId];
 
-    game.forEach((ws) => {
-      if (ws.nickname === user.name) {
-        ws.field = field.flat();
+    game.forEach((wss) => {
+      if (wss.nickName === user.name) {
+        wss.field = field;
       }
     });
 
     if (game.length === 2) {
-      const isStarted = game.every((ws) => ws.field);
-      msg.isStarted = isStarted;
+      msg.isStarted = game.every((ws) => ws.field);
     } else {
       msg.isStarted = false;
     }
-
-    msg.method = "start";
 
     this.connectBroadcast(ws, msg);
   }
 
   shootHandler(ws, msg) {
-    const { gameId, user, coordinates } = msg;
-    const game = this.games[gameId];
-    const damageUser = game.find((ws) => ws.nickName !== user.name);
+    // msg.method = "shoot";
+    console.log("shoot");
+    // const { gameId, user, coordinates } = msg;
+    // const game = this.games[gameId];
+    // const damageUser = game.find((ws) => ws.nickName !== user.name);
 
-    damageUser.field = damageUser.field.filter((cell) => cell !== coordinates);
-
-    if (game.some((ws) => ws.field.length)) {
-      msg.method = "gameOver";
-    }
+    // if (isGameOver) {
+    //   msg.method = "gameOver";
+    // }
 
     this.connectBroadcast(ws, msg);
   }
 
-  exitHandler(ws, msg) {
+  async exitHandler(ws, msg) {
+    console.log("exit");
     const { gameId } = msg;
+
+    for (const ws of this.games[gameId]) {
+      await ModelUser.updateOne({ name: ws.nickName }, { gameId: "" });
+    }
+
     delete this.games[gameId];
     this.connectBroadcast(ws, msg);
   }
@@ -120,5 +121,29 @@ export class WsController {
         client.send(JSON.stringify(msg));
       }
     });
+  }
+
+  reconnect(game, ws, user, msg) {
+    const replaceUser = game.findIndex((wss) => wss.nickName === user.name);
+    const opponent = game.findIndex((wss) => wss.nickName !== user.name);
+    if (replaceUser >= 0) {
+      msg.isAbleShoot = ws.isAbleShoot = game[replaceUser].isAbleShoot;
+      msg.isGameFinded = ws.isGameFinded = game[replaceUser].isGameFinded;
+      if (game[replaceUser].field) {
+        msg.field = ws.field = game[replaceUser].field;
+      }
+      game[replaceUser] = ws;
+
+      if (opponent >= 0) {
+        msg.opponentName = game[opponent].nickName;
+        if (game[opponent].field) {
+          msg.opponentField = game[opponent].field;
+        }
+      }
+
+      console.log("reconnect");
+      return true;
+    }
+    return false;
   }
 }
