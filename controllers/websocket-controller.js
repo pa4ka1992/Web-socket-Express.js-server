@@ -88,15 +88,34 @@ export class WsController {
   }
 
   shootHandler(ws, msg) {
-    // msg.method = "shoot";
     console.log("shoot");
-    // const { gameId, user, coordinates } = msg;
-    // const game = this.games[gameId];
-    // const damageUser = game.find((ws) => ws.nickName !== user.name);
+    const { gameId, user, shoot } = msg;
+    const game = this.games[gameId];
+    const damageUser = game.find((wss) => wss.nickName !== user.name);
 
-    // if (isGameOver) {
-    //   msg.method = "gameOver";
-    // }
+    const isDamaged = damageUser.field.shipsLocation.some((ship) => {
+      const isHitted = ship.shipLocation.find((cell) => cell === shoot);
+
+      if (isHitted) {
+        msg.isAbleShoot = ws.isAbleShoot = true;
+        ship.woundedCells.push(shoot);
+      }
+      return !!isHitted;
+    });
+
+    if (!isDamaged) {
+      msg.isAbleShoot = ws.isAbleShoot = false;
+      damageUser.misses.push(shoot);
+    }
+
+    const isGameOver = damageUser.field.shipsLocation.every(
+      (ship) => ship.decks === ship.woundedCells
+    );
+
+    if (isGameOver) {
+      msg.method = "gameover";
+      msg.winner = user.name;
+    }
 
     this.connectBroadcast(ws, msg);
   }
@@ -124,9 +143,18 @@ export class WsController {
   }
 
   reconnect(game, ws, user, msg) {
-    const replaceUser = game.findIndex((wss) => wss.nickName === user.name);
-    const opponent = game.findIndex((wss) => wss.nickName !== user.name);
-    if (replaceUser >= 0) {
+    let replaceUser;
+    let opponent;
+
+    game.forEach((wss, i) => {
+      if (wss.nickName === user.name) {
+        replaceUser = i;
+      } else {
+        opponent = i;
+      }
+    });
+
+    if ( replaceUser && replaceUser >= 0) {
       msg.isAbleShoot = ws.isAbleShoot = game[replaceUser].isAbleShoot;
       msg.isGameFinded = ws.isGameFinded = game[replaceUser].isGameFinded;
       if (game[replaceUser].field) {
@@ -134,7 +162,7 @@ export class WsController {
       }
       game[replaceUser] = ws;
 
-      if (opponent >= 0) {
+      if (opponent && opponent >= 0) {
         msg.opponentName = game[opponent].nickName;
         if (game[opponent].field) {
           msg.opponentField = game[opponent].field;
