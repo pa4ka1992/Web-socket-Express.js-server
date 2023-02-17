@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import router from "./route/index.js";
 import { WsController } from "./controllers/websocket-controller.js";
+import { SocketService } from "./services/socket-service.js";
 import { errorMiddleware } from "./middleware/error-middleware.js";
 
 dotenv.config();
@@ -25,7 +26,7 @@ app.use(cookieParser());
 app.use("/api", router);
 app.use(errorMiddleware);
 
-const wsController = new WsController(wsInstance);
+const wsController = new WsController(new SocketService(wsInstance));
 
 app.ws("/game", wsController.webSocketHandler.bind(wsController));
 
