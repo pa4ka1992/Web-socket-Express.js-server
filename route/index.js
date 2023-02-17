@@ -1,8 +1,9 @@
 import { Router } from "express";
 import expressWs from "express-ws";
+import { body } from "express-validator";
 import { userController } from "../controllers/user-controller.js";
 import { gameController } from "../controllers/game-controller.js";
-import { body } from "express-validator";
+import { authMiddleware } from "../middleware/auth-middleware.js";
 
 const router = new Router();
 export const wsRouter = expressWs(router);
@@ -14,7 +15,7 @@ router.post(
 );
 router.delete("/logout", userController.logOut);
 router.get("/refresh", userController.refreshToken.bind(userController));
-router.get("/getusers", userController.getUsers);
-router.get("/startgame", gameController.startGame);
+router.get("/getusers", authMiddleware, userController.getUsers);
+router.get("/startgame", authMiddleware, gameController.startGame);
 
 export default router;
