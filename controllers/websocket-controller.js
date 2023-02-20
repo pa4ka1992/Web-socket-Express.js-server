@@ -19,11 +19,11 @@ export class WsController {
         case "shoot":
           this.service.shootHandler(ws, msg);
           break;
-
-        case "exit":
-          this.service.exitHandler(ws, msg);
-          break;
       }
+    });
+
+    ws.on("close", (msg) => {
+      this.service.closeHandler(ws, msg);
     });
   }
 }
