@@ -13,7 +13,8 @@ export class UserController {
       return res
         .status(200)
         .cookie("refreshToken", userData.refreshToken, {
-          maxAge: 3600000000,
+          path: "/",
+          maxAge: 60 * 60 * 24 * 30,
           httpOnly: true,
           sameSite: "none",
           secure: true,
