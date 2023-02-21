@@ -29,12 +29,11 @@ export class SocketService {
       if (!isReconnect) {
         this.messageApplier("isAbleShoot", false, msg, ws);
 
-        msg.opponentName = this.games[gameId][0].nickName;
+        msg.opponentName = game[0].nickName;
         game.push(ws);
 
-        msg.isGameFinded = true;
         game.forEach((wss) => {
-          wss.isGameFinded = true;
+          this.messageApplier("isGameFinded", true, msg, wss);
         });
       }
     }
@@ -47,12 +46,12 @@ export class SocketService {
 
   readyHandler(ws, msg) {
     console.log("ready");
-    msg.method = "start";
-    const { user, field, gameId } = msg;
+    const { nickName, gameId } = ws;
+    const { field } = msg;
     const game = this.games[gameId];
 
     game.forEach((wss) => {
-      if (wss.nickName === user.name) {
+      if (wss.nickName === nickName) {
         wss.field = field;
       }
     });
@@ -63,16 +62,19 @@ export class SocketService {
       msg.isStarted = false;
     }
 
+    msg.user = ws.nickName;
+
     this.connectBroadcast(ws, msg);
   }
 
   shootHandler(ws, msg) {
     console.log("shoot");
-    const { gameId, user, shoot } = msg;
+    const { nickName, gameId } = ws;
+    const { shoot } = msg;
     const game = this.games[gameId];
-    const damageUser = game.find((wss) => wss.nickName !== user.name);
+    const damageUser = game.find((wss) => wss.nickName !== nickName);
 
-    const isDamaged = damageUser.field.shipsLocation.some((ship) => {
+    const isDamaged = damageUser.field.ships.some((ship) => {
       const isHitted = ship.shipLocation.find((cell) => cell === shoot);
 
       if (isHitted) {
@@ -84,34 +86,37 @@ export class SocketService {
 
     if (!isDamaged) {
       this.messageApplier("isAbleShoot", false, msg, ws);
-      damageUser.misses.push(shoot);
+      damageUser.field.misses.push(shoot);
     }
 
-    const isGameOver = damageUser.field.shipsLocation.every(
-      (ship) => ship.decks === ship.woundedCells
+    const isGameOver = damageUser.field.ships.every(
+      (ship) => ship.decks === ship.woundedCells.length
     );
 
     if (isGameOver) {
+      console.log('gameover');
       msg.method = "gameover";
-      msg.winner = user.name;
+      msg.winner = nickName;
     }
+
+    msg.user = ws.nickName;
 
     this.connectBroadcast(ws, msg);
   }
 
   async closeHandler(ws, msg) {
-    console.log("exit", ws.nickName);
-    const { gameId } = ws;
+    // console.log("exit", ws.nickName);
+    // const { gameId } = ws;
 
-    for (const ws of this.games[gameId]) {
-      await ModelUser.updateOne({ name: ws.nickName }, { gameId: "" });
-    }
+    // for (const ws of this.games[gameId]) {
+    //   await ModelUser.updateOne({ name: ws.nickName }, { gameId: "" });
+    // }
 
     // delete this.games[gameId];
   }
 
   connectBroadcast(ws, msg) {
-    const { gameId } = msg;
+    const { gameId } = ws;
 
     this.info.clients.forEach((client) => {
       if (client.gameId === gameId) {
