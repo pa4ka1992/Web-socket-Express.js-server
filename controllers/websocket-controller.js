@@ -4,6 +4,8 @@ export class WsController {
   }
 
   webSocketHandler(ws, req) {
+    ws.game = {};
+
     ws.on("message", (msg) => {
       msg = JSON.parse(msg.toString());
 
@@ -19,11 +21,14 @@ export class WsController {
         case "shoot":
           this.service.shootHandler(ws, msg);
           break;
+
+        case "exit":
+          this.service.exitHandler(ws, msg);
       }
     });
 
-    ws.on("close", (msg) => {
-      this.service.closeHandler(ws, msg);
-    });
+    // ws.on("close", (msg) => {
+    //   this.service.closeHandler(ws, msg);
+    // });
   }
 }

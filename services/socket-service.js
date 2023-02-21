@@ -11,8 +11,8 @@ export class SocketService {
     console.log("connect");
     const { gameId, user } = msg;
 
-    ws.gameId = gameId;
-    ws.nickName = user.name;
+    ws.game.gameId = gameId;
+    ws.game.nickName = user.name;
 
     const game = this.games[gameId];
 
@@ -46,35 +46,35 @@ export class SocketService {
 
   readyHandler(ws, msg) {
     console.log("ready");
-    const { nickName, gameId } = ws;
+    const { nickName, gameId } = ws.game;
     const { field } = msg;
     const game = this.games[gameId];
 
     game.forEach((wss) => {
-      if (wss.nickName === nickName) {
-        wss.field = field;
+      if (wss.game.nickName === nickName) {
+        wss.game.field = field;
       }
     });
 
     if (game.length === 2) {
-      msg.isStarted = game.every((ws) => ws.field);
+      msg.isStarted = game.every((ws) => ws.game.field);
     } else {
       msg.isStarted = false;
     }
 
-    msg.user = ws.nickName;
+    msg.user = ws.game.nickName;
 
     this.connectBroadcast(ws, msg);
   }
 
   shootHandler(ws, msg) {
     console.log("shoot");
-    const { nickName, gameId } = ws;
+    const { nickName, gameId } = ws.game;
     const { shoot } = msg;
     const game = this.games[gameId];
-    const damageUser = game.find((wss) => wss.nickName !== nickName);
+    const damageUser = game.find((wss) => wss.game.nickName !== nickName);
 
-    const isDamaged = damageUser.field.ships.some((ship) => {
+    const isDamaged = damageUser.game.field.ships.some((ship) => {
       const isHitted = ship.shipLocation.find((cell) => cell === shoot);
 
       if (isHitted) {
@@ -86,47 +86,52 @@ export class SocketService {
 
     if (!isDamaged) {
       this.messageApplier("isAbleShoot", false, msg, ws);
-      damageUser.field.misses.push(shoot);
+      damageUser.game.field.misses.push(shoot);
     }
 
-    const isGameOver = damageUser.field.ships.every(
+    const isGameOver = damageUser.game.field.ships.every(
       (ship) => ship.decks === ship.woundedCells.length
     );
 
     if (isGameOver) {
-      console.log('gameover');
+      console.log("gameover");
       msg.method = "gameover";
       msg.winner = nickName;
     }
 
-    msg.user = ws.nickName;
+    msg.user = ws.game.nickName;
 
     this.connectBroadcast(ws, msg);
   }
 
-  async closeHandler(ws, msg) {
-    // console.log("exit", ws.nickName);
-    // const { gameId } = ws;
+  async exitHandler(ws, msg) {
+    const { gameId } = ws.game;
 
-    // for (const ws of this.games[gameId]) {
-    //   await ModelUser.updateOne({ name: ws.nickName }, { gameId: "" });
-    // }
+    for (const ws of this.games[gameId]) {
+      await ModelUser.updateOne({ name: ws.game.nickName }, { gameId: "" });
+    }
 
-    // delete this.games[gameId];
+    delete this.games[gameId];
+    this.connectBroadcast(ws, msg);
   }
 
   connectBroadcast(ws, msg) {
-    const { gameId } = ws;
+    const { gameId } = ws.game;
 
     this.info.clients.forEach((client) => {
-      if (client.gameId === gameId) {
+      if (client.game.gameId === gameId) {
+        console.log(msg);
         client.send(JSON.stringify(msg));
+
+        if (msg.method === "exit") {
+          client.game = {};
+        }
       }
     });
   }
 
   messageApplier(key, value, msg, wss) {
-    msg[key] = wss[key] = value;
+    msg[key] = wss.game[key] = value;
   }
 
   reconnect(game, ws, user, msg) {
@@ -136,7 +141,7 @@ export class SocketService {
     let opponent;
 
     game.forEach((wss, i) => {
-      if (wss.nickName === user.name) {
+      if (wss.game.nickName === user.name) {
         replaceUser = wss;
         replaceIndex = i;
       } else {
@@ -145,18 +150,18 @@ export class SocketService {
     });
 
     if (replaceUser) {
-      this.messageApplier("isAbleShoot", replaceUser.isAbleShoot, msg, ws);
-      this.messageApplier("isGameFinded", replaceUser.isGameFinded, msg, ws);
+      this.messageApplier("isAbleShoot", replaceUser.game.isAbleShoot, msg, ws);
+      this.messageApplier("isGameFinded", replaceUser.game.isGameFinded, msg, ws);
 
-      if (replaceUser.field) {
-        this.messageApplier("field", replaceUser.field, msg, ws);
+      if (replaceUser.game.field) {
+        this.messageApplier("field", replaceUser.game.field, msg, ws);
       }
       game[replaceIndex] = ws;
 
       if (opponent) {
-        msg.opponentName = opponent.nickName;
+        msg.opponentName = opponent.game.nickName;
         if (opponent.field) {
-          msg.opponentField = opponent.field;
+          msg.opponentField = opponent.game.field;
         }
       }
 
