@@ -24,6 +24,11 @@ export class WsController {
 
         case "exit":
           this.service.exitHandler(ws, msg);
+          break;
+
+        case "chat":
+          this.service.chatHandler(ws, msg);
+          break;
       }
     });
 

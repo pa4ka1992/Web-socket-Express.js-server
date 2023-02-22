@@ -4,6 +4,8 @@ export class SocketService {
   constructor(wsInstance) {
     this.wsInstance = wsInstance;
     this.games = {};
+    this.gameChats = {};
+    this.commonChat = [];
     this.info = wsInstance.getWss();
   }
 
@@ -21,6 +23,7 @@ export class SocketService {
       this.messageApplier("isGameFinded", false, msg, ws);
 
       this.games[gameId] = [ws];
+      this.gameChats[gameId] = [];
     }
 
     if (game && game.length === 1) {
@@ -41,6 +44,7 @@ export class SocketService {
     if (game && game.length === 2) {
       this.reconnect(game, ws, user, msg);
     }
+
     this.connectBroadcast(ws, msg);
   }
 
@@ -115,12 +119,28 @@ export class SocketService {
     this.connectBroadcast(ws, msg);
   }
 
+  chatHandler(ws, msg) {
+    console.log("chat");
+    const { mail } = msg;
+    if (msg.gameId) {
+      this.gameChats[gameId].push(mail);
+    } else {
+      this.commonChat.push(mail);
+    }
+
+    this.connectBroadcast(ws, msg);
+  }
+
   connectBroadcast(ws, msg) {
     const { gameId } = ws.game;
 
     this.info.clients.forEach((client) => {
+      if (msg.method === "chat") {
+        console.log('send mail');
+        client.send(JSON.stringify(msg));
+      }
+
       if (client.game.gameId === gameId) {
-        console.log(msg);
         client.send(JSON.stringify(msg));
 
         if (msg.method === "exit") {
@@ -151,7 +171,12 @@ export class SocketService {
 
     if (replaceUser) {
       this.messageApplier("isAbleShoot", replaceUser.game.isAbleShoot, msg, ws);
-      this.messageApplier("isGameFinded", replaceUser.game.isGameFinded, msg, ws);
+      this.messageApplier(
+        "isGameFinded",
+        replaceUser.game.isGameFinded,
+        msg,
+        ws
+      );
 
       if (replaceUser.game.field) {
         this.messageApplier("field", replaceUser.game.field, msg, ws);
