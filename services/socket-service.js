@@ -109,10 +109,14 @@ export class SocketService {
   }
 
   async exitHandler(ws, msg) {
+    console.log("exit");
     const { gameId } = ws.game;
 
-    for (const ws of this.games[gameId]) {
-      await ModelUser.updateOne({ name: ws.game.nickName }, { gameId: "" });
+    for (let ws of this.games[gameId]) {
+      await ModelUser.updateOne(
+        { name: ws.game.nickName },
+        { isWaitingGame: false, gameId: "" }
+      );
     }
 
     delete this.games[gameId];
@@ -136,12 +140,15 @@ export class SocketService {
 
     this.info.clients.forEach((client) => {
       if (msg.method === "chat") {
-        console.log('send mail');
+        console.log("chat");
         client.send(JSON.stringify(msg));
       }
 
       if (client.game.gameId === gameId) {
-        client.send(JSON.stringify(msg));
+        if (msg.method !== "chat") {
+          console.log("nochat");
+          client.send(JSON.stringify(msg));
+        }
 
         if (msg.method === "exit") {
           client.game = {};

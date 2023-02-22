@@ -32,8 +32,8 @@ export class WsController {
       }
     });
 
-    // ws.on("close", (msg) => {
-    //   this.service.closeHandler(ws, msg);
-    // });
+    ws.on("close", (msg) => {
+      console.log('socket closed');
+    });
   }
 }

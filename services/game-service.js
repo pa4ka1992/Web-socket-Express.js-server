@@ -7,9 +7,9 @@ class GameService {
     const userData = tokenService.validateRefreshToken(refreshToken);
     const users = await userService.getUsers();
 
-    const reconnectUser = users.find(
-      (user) => userData.id === user._id.toString() && !!user.gameId
-    );
+    const reconnectUser = users.find((user) => {
+      return userData.id === user._id.toString() && !!user.gameId;
+    });
 
     if (reconnectUser) {
       return {
@@ -22,6 +22,7 @@ class GameService {
     let gameId;
 
     if (opponent) {
+      console.log('opponent');
       gameId = opponent.gameId;
 
       await ModelUser.updateOne(
@@ -29,11 +30,9 @@ class GameService {
         { isWaitingGame: false }
       );
 
-      await ModelUser.updateOne(
-        { _id: userData.id },
-        { gameId: gameId }
-      );
+      await ModelUser.updateOne({ _id: userData.id }, { gameId: gameId });
     } else {
+      console.log('me');
       gameId = userData.id;
 
       await ModelUser.updateOne(
@@ -41,6 +40,11 @@ class GameService {
         { isWaitingGame: true, gameId: userData.id }
       );
     }
+
+    console.log({
+      gameId: gameId,
+      user: { id: userData.id, name: userData.name },
+    });
 
     return {
       gameId: gameId,
