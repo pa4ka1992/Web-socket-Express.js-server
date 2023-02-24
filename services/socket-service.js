@@ -126,10 +126,14 @@ export class SocketService {
   chatHandler(ws, msg) {
     console.log("chat");
     const { mail } = msg;
-    if (msg.gameId) {
-      this.gameChats[gameId].push(mail);
-    } else {
+    const { chatName, gameId } = mail;
+
+    if (chatName === "common") {
       this.commonChat.push(mail);
+    }
+
+    if (chatName === "game" && gameId) {
+      this.gameChats[gameId].push(mail);
     }
 
     this.connectBroadcast(ws, msg);
@@ -146,7 +150,6 @@ export class SocketService {
 
       if (client.game.gameId === gameId) {
         if (msg.method !== "chat") {
-          console.log("nochat");
           client.send(JSON.stringify(msg));
         }
 
@@ -177,6 +180,7 @@ export class SocketService {
     });
 
     if (replaceUser) {
+      this.mailing(ws, "game");
       this.messageApplier("isAbleShoot", replaceUser.game.isAbleShoot, msg, ws);
       this.messageApplier(
         "isGameFinded",
@@ -202,10 +206,13 @@ export class SocketService {
     return false;
   }
 
-  mailing(ws) {
+  mailing(ws, chat) {
+    const chatContent =
+      chat === "common" ? this.commonChat : this.gameChats[ws.game.gameId];
     const msg = {
       method: "mailing",
-      commonChat: this.commonChat,
+      chatName: chat,
+      chatMessage: chatContent,
     };
 
     console.log("mailing", msg);

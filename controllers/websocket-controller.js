@@ -6,7 +6,7 @@ export class WsController {
   webSocketHandler(ws, req) {
     ws.game = {};
 
-    this.service.mailing(ws);
+    this.service.mailing(ws, 'common');
 
     ws.on("message", (msg) => {
       msg = JSON.parse(msg.toString());
