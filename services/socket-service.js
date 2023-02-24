@@ -7,6 +7,7 @@ export class SocketService {
     this.gameChats = {};
     this.commonChat = [];
     this.info = wsInstance.getWss();
+    this.date = "";
   }
 
   connectHandler(ws, msg) {
@@ -126,14 +127,40 @@ export class SocketService {
   chatHandler(ws, msg) {
     console.log("chat");
     const { mail } = msg;
-    const { chatName, gameId } = mail;
+    const { chatName, gameId, date } = mail;
+    const dateShort = date.slice(0, 15);
 
     if (chatName === "common") {
-      this.commonChat.push(mail);
+      if (!this.commonChat.length) {
+        msg.mail.setDate = true;
+        this.date = dateShort;
+      }
+
+      if (this.date !== dateShort) {
+        msg.mail.setDate = true;
+        this.date = dateShort;
+      }
+
+      console.log('commonmessage', msg.mail);
+      this.commonChat.push(msg.mail);
     }
 
     if (chatName === "game" && gameId) {
-      this.gameChats[gameId].push(mail);
+
+      const gameChat = this.gameChats[gameId];
+
+      if (!gameChat.length) {
+        msg.mail.setDate = true;
+        this.date = dateShort;
+      }
+
+      if (this.date !== dateShort) {
+        msg.mail.setDate = true;
+        this.date = dateShort;
+      }
+
+      console.log('gamemessage', msg.mail);
+      gameChat.push(msg.mail);
     }
 
     this.connectBroadcast(ws, msg);
@@ -214,8 +241,6 @@ export class SocketService {
       chatName: chat,
       chatMessage: chatContent,
     };
-
-    console.log("mailing", msg);
 
     ws.send(JSON.stringify(msg));
   }
