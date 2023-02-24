@@ -6,6 +6,8 @@ export class WsController {
   webSocketHandler(ws, req) {
     ws.game = {};
 
+    this.service.mailing(ws);
+
     ws.on("message", (msg) => {
       msg = JSON.parse(msg.toString());
 
@@ -33,7 +35,7 @@ export class WsController {
     });
 
     ws.on("close", (msg) => {
-      console.log('socket closed');
+      console.log("socket closed");
     });
   }
 }

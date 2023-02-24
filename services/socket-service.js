@@ -201,4 +201,15 @@ export class SocketService {
     }
     return false;
   }
+
+  mailing(ws) {
+    const msg = {
+      method: "mailing",
+      commonChat: this.commonChat,
+    };
+
+    console.log("mailing", msg);
+
+    ws.send(JSON.stringify(msg));
+  }
 }
