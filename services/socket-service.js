@@ -18,6 +18,7 @@ export class SocketService {
     ws.game.nickName = user.name;
 
     const game = this.games[gameId];
+    let isReconnect = false;
 
     if (!game) {
       this.messageApplier("isAbleShoot", true, msg, ws);
@@ -28,7 +29,7 @@ export class SocketService {
     }
 
     if (game && game.length === 1) {
-      const isReconnect = this.reconnect(game, ws, user, msg);
+      isReconnect = this.reconnect(game, ws, user, msg);
 
       if (!isReconnect) {
         this.messageApplier("isAbleShoot", false, msg, ws);
@@ -43,8 +44,18 @@ export class SocketService {
     }
 
     if (game && game.length === 2) {
-      this.reconnect(game, ws, user, msg);
+      isReconnect = this.reconnect(game, ws, user, msg);
     }
+
+    if (isReconnect) {
+      msg.isReconnect = true;
+    }
+
+    this.connectBroadcast(ws, msg);
+  }
+
+  disconnectHandler(ws, msg) {
+    msg.user = ws.game.nickName;
 
     this.connectBroadcast(ws, msg);
   }
@@ -121,6 +132,8 @@ export class SocketService {
     }
 
     delete this.games[gameId];
+
+    msg.user = ws.game.nickName;
     this.connectBroadcast(ws, msg);
   }
 
@@ -141,12 +154,11 @@ export class SocketService {
         this.date = dateShort;
       }
 
-      console.log('commonmessage', msg.mail);
+      console.log("commonmessage", msg.mail);
       this.commonChat.push(msg.mail);
     }
 
     if (chatName === "game" && gameId) {
-
       const gameChat = this.gameChats[gameId];
 
       if (!gameChat.length) {
@@ -159,7 +171,7 @@ export class SocketService {
         this.date = dateShort;
       }
 
-      console.log('gamemessage', msg.mail);
+      console.log("gamemessage", msg.mail);
       gameChat.push(msg.mail);
     }
 

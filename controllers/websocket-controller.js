@@ -6,7 +6,7 @@ export class WsController {
   webSocketHandler(ws, req) {
     ws.game = {};
 
-    this.service.mailing(ws, 'common');
+    this.service.mailing(ws, "common");
 
     ws.on("message", (msg) => {
       msg = JSON.parse(msg.toString());
@@ -14,6 +14,10 @@ export class WsController {
       switch (msg.method) {
         case "connection":
           this.service.connectHandler(ws, msg);
+          break;
+
+        case "disconnect":
+          this.service.disconnectHandler(ws, msg);
           break;
 
         case "ready":
