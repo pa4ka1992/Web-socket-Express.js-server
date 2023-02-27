@@ -11,13 +11,11 @@ export class WsController {
     ws.on("message", (msg) => {
       msg = JSON.parse(msg.toString());
 
+      console.log(msg);
+
       switch (msg.method) {
         case "connection":
           this.service.connectHandler(ws, msg);
-          break;
-
-        case "disconnect":
-          this.service.disconnectHandler(ws, msg);
           break;
 
         case "ready":
@@ -38,8 +36,9 @@ export class WsController {
       }
     });
 
-    ws.on("close", (msg) => {
-      console.log("socket closed");
+    ws.on("close", () => {
+      const msg = {};
+      this.service.disconnectHandler(ws, msg);
     });
   }
 }
