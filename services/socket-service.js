@@ -43,7 +43,7 @@ export class SocketService {
   }
 
   reconnect(game, ws, user, msg) {
-    useReconnect.call(this, game, ws, user, msg);
+    return useReconnect.call(this, game, ws, user, msg);
   }
 
   connectBroadcast(ws, msg) {

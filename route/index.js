@@ -16,6 +16,6 @@ router.post(
 router.delete("/logout", userController.logOut);
 router.get("/refresh", userController.refreshToken.bind(userController));
 router.get("/getusers", authMiddleware, userController.getUsers);
-router.get("/startgame", authMiddleware, gameController.startGame);
+router.patch("/startgame", authMiddleware, gameController.startGame);
 
 export default router;

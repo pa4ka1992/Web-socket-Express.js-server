@@ -16,10 +16,6 @@ export class WsController {
           this.service.connectHandler(ws, msg);
           break;
 
-        case "disconnect":
-          this.service.disconnectHandler(ws, msg);
-          break;
-
         case "ready":
           this.service.readyHandler(ws, msg);
           break;
@@ -38,8 +34,9 @@ export class WsController {
       }
     });
 
-    ws.on("close", (msg) => {
-      console.log("socket closed");
+    ws.on("close", () => {
+      const msg = {};
+      this.service.disconnectHandler(ws, msg);
     });
   }
 }

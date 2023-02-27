@@ -28,7 +28,7 @@ export function useReconnect(game, ws, user, msg) {
 
     if (opponent) {
       msg.opponentName = opponent.game.nickName;
-      if (opponent.field) {
+      if (opponent.game.field) {
         msg.opponentField = opponent.game.field;
       }
     }

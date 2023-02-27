@@ -39,4 +39,8 @@ export class ApiError extends Error {
   static GetUsersError() {
     return new ApiError(500, "Ошибка получения пользователей");
   }
+
+  static GameError() {
+    return new ApiError(405, "Игра не найдена");
+  }
 }

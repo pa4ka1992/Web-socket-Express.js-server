@@ -4,14 +4,16 @@ export async function sendExit(ws, msg) {
   console.log("exit");
   const { gameId } = ws.game;
 
-  for (let ws of this.games[gameId]) {
-    await ModelUser.updateOne(
-      { name: ws.game.nickName },
-      { isWaitingGame: false, gameId: "" }
-    );
-  }
+  if (this.games.hasOwnProperty(`${gameId}`)) {
+    for (let ws of this.games[gameId]) {
+      await ModelUser.updateOne(
+        { name: ws.game.nickName },
+        { isWaitingGame: false, gameId: "" }
+      );
+    }
 
-  delete this.games[gameId];
+    delete this.games[gameId];
+  }
 
   msg.user = ws.game.nickName;
   this.connectBroadcast(ws, msg);
