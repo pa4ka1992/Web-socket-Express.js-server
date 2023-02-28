@@ -51,6 +51,23 @@ export class SocketService {
     return useReconnect.call(this, game, ws, user, msg);
   }
 
+  sendOnline() {
+    console.log("online");
+    const msg = {};
+    msg.method = "online";
+    let count = 0;
+
+    this.info.clients.forEach((sum, client) => {
+      count++
+    });
+
+    msg.count = count - 1;
+
+    this.info.clients.forEach((client) => {
+      client.send(JSON.stringify(msg));
+    });
+  }
+
   connectBroadcast(ws, msg) {
     const { gameId } = ws.game;
 
