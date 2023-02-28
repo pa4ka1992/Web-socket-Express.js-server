@@ -6,6 +6,7 @@ import {
   sendExit,
   sendChat,
   useReconnect,
+  sendInvite,
 } from "./socketHandlers/_index.js";
 
 export class SocketService {
@@ -42,6 +43,10 @@ export class SocketService {
     sendChat.call(this, ws, msg);
   }
 
+  inviteHandler(ws, msg) {
+    sendInvite.call(this, ws, msg);
+  }
+
   reconnect(game, ws, user, msg) {
     return useReconnect.call(this, game, ws, user, msg);
   }
@@ -53,9 +58,17 @@ export class SocketService {
       if (msg.method === "chat") {
         console.log("chat");
         client.send(JSON.stringify(msg));
+        return;
       }
 
-      if (client.game.gameId === gameId) {
+      if (msg.method === "invite") {
+        if (client.socketName === msg.friend) {
+          client.send(JSON.stringify(msg));
+          return;
+        }
+      }
+
+      if (client.game.gameId === gameId && gameId) {
         if (msg.method !== "chat") {
           client.send(JSON.stringify(msg));
         }

@@ -5,6 +5,7 @@ export class WsController {
 
   webSocketHandler(ws, req) {
     ws.game = {};
+    ws.socketName = "";
 
     this.service.mailing(ws, "common");
 
@@ -32,6 +33,14 @@ export class WsController {
 
         case "chat":
           this.service.chatHandler(ws, msg);
+          break;
+
+        case "invite":
+          this.service.inviteHandler(ws, msg);
+          break;
+
+        case "setsocketname":
+          ws.socketName = msg.socketName;
           break;
       }
     });

@@ -9,6 +9,8 @@ export function sendShoot(ws, msg) {
     const isHitted = ship.shipLocation.find((cell) => cell === shoot);
 
     if (isHitted) {
+      damageUser.game.isAbleShoot = false;
+
       this.messageApplier("isAbleShoot", true, msg, ws);
       ship.woundedCells.push(shoot);
     }
@@ -16,6 +18,8 @@ export function sendShoot(ws, msg) {
   });
 
   if (!isDamaged) {
+    damageUser.game.isAbleShoot = true;
+
     this.messageApplier("isAbleShoot", false, msg, ws);
     damageUser.game.field.misses.push(shoot);
   }
@@ -33,4 +37,4 @@ export function sendShoot(ws, msg) {
   msg.user = ws.game.nickName;
 
   this.connectBroadcast(ws, msg);
-};
+}

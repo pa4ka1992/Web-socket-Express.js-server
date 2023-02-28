@@ -11,8 +11,14 @@ export function sendReady(ws, msg) {
   });
 
   if (game.length === 2) {
-    msg.isStarted = game.every((ws) => ws.game.field);
+    const isStarted = game.every((ws) => ws.game.field);
+
+    if (isStarted) {
+      game.forEach((ws) => (ws.game.isStarted = true));
+      msg.isStarted = true;
+    }
   } else {
+    game.forEach((ws) => (ws.game.isStarted = false));
     msg.isStarted = false;
   }
 

@@ -8,6 +8,8 @@ export function sendConnect(ws, msg) {
   const game = this.games[gameId];
   let isReconnect = false;
 
+  this.messageApplier("isStarted", false, msg, ws);
+
   if (!game) {
     this.messageApplier("isAbleShoot", true, msg, ws);
     this.messageApplier("isGameFinded", false, msg, ws);
@@ -17,6 +19,7 @@ export function sendConnect(ws, msg) {
   }
 
   if (game && game.length === 1) {
+    console.log("длина игры 1");
     isReconnect = this.reconnect(game, ws, user, msg);
 
     if (!isReconnect) {
@@ -31,6 +34,7 @@ export function sendConnect(ws, msg) {
   }
 
   if (game && game.length === 2) {
+    console.log("длина игры 2");
     isReconnect = this.reconnect(game, ws, user, msg);
   }
 
