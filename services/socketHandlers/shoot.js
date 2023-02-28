@@ -6,7 +6,7 @@ export function sendShoot(ws, msg) {
   const damageUser = game.find((wss) => wss.game.nickName !== nickName);
 
   const isDamaged = damageUser.game.field.ships.some((ship) => {
-    const isHitted = ship.shipLocation.find((cell) => cell === shoot);
+    const isHitted = ship.shipLocation.some((cell) => cell === shoot);
 
     if (isHitted) {
       damageUser.game.isAbleShoot = false;
@@ -14,7 +14,8 @@ export function sendShoot(ws, msg) {
       this.messageApplier("isAbleShoot", true, msg, ws);
       ship.woundedCells.push(shoot);
     }
-    return !!isHitted;
+
+    return isHitted;
   });
 
   if (!isDamaged) {
