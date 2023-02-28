@@ -38,6 +38,8 @@ export function sendConnect(ws, msg) {
     isReconnect = this.reconnect(game, ws, user, msg);
   }
 
+  console.log('reconnectValue', isReconnect);
+
   if (isReconnect) {
     msg.isReconnect = true;
   }
