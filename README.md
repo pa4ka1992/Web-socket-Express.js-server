@@ -145,7 +145,7 @@ Log out user from the game.
       "message": "Ошибка выхода"
     }
 
-    or
+    "or"
 
     {
       "message": "Ошибка обновления токена"
@@ -244,6 +244,7 @@ get all users
 * **Headers requaired!:**
 
     `'Cookie': 'refreshToken=<token value received after login>'`
+
     `'Authorization': 'Bearer <access token received after login>'`
 
 *  **URL Params**
@@ -313,6 +314,7 @@ Start online game
 * **Headers requaired!:**
 
     `'Cookie': 'refreshToken=<token value received after login>'`
+
     `'Authorization': 'Bearer <access token received after login>'`
 
 *  **URL Params**
