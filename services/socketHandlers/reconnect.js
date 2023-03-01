@@ -16,7 +16,6 @@ export function useReconnect(game, ws, user, msg) {
   if (replaceUser) {
     const { isAbleShoot, isGameFinded, isStarted } = replaceUser.game;
 
-    console.log("заменить игрока", replaceUser.game);
 
     this.mailing(ws, "game");
     this.messageApplier("isAbleShoot", isAbleShoot, msg, ws);
@@ -38,10 +37,8 @@ export function useReconnect(game, ws, user, msg) {
       }
     }
 
-    console.log('переподключение');
     return true;
   }
 
-  console.log('не переподключение');
   return false;
 }

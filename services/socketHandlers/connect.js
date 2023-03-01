@@ -16,10 +16,7 @@ export function sendConnect(ws, msg) {
 
     this.games[gameId] = [ws];
     this.gameChats[gameId] = [];
-  }
-
-  if (game && game.length === 1) {
-    console.log("длина игры 1");
+  } else if (game && game.length === 1) {
     isReconnect = this.reconnect(game, ws, user, msg);
 
     if (!isReconnect) {
@@ -31,14 +28,9 @@ export function sendConnect(ws, msg) {
         this.messageApplier("isGameFinded", true, msg, wss);
       });
     }
-  }
-
-  if (game && game.length === 2) {
-    console.log("длина игры 2");
+  } else if (game && game.length === 2) {
     isReconnect = this.reconnect(game, ws, user, msg);
   }
-
-  console.log('reconnectValue', isReconnect);
 
   if (isReconnect) {
     msg.isReconnect = true;
