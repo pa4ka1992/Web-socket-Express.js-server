@@ -45,14 +45,10 @@ export class UserController {
   async logOut(req, res, next) {
     try {
       const { refreshToken } = req.cookies;
-      const token = await userService.logOut(refreshToken);
+      await userService.logOut(refreshToken);
 
       return res
-        .clearCookie(refreshToken, {
-          httpOnly: true,
-          sameSite: "none",
-          secure: true,
-        })
+        .clearCookie('refreshToken')
         .status(200)
         .json({ message: "Пользователь удален" });
     } catch (error) {
