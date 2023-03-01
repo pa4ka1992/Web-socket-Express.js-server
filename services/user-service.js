@@ -37,11 +37,13 @@ class UserService {
 
   async logOut(refreshToken) {
     const userData = tokenService.validateRefreshToken(refreshToken);
-    const user = await ModelUser.deleteOne({ _id: userData.id });
-    const token = await tokenService.removeToken(refreshToken);
+    const user = await ModelUser.findOne({ _id: userData.id });
 
-    if (!user || !token) {
+    if (!user) {
       throw ApiError.ExitError();
+    } else {
+      await ModelUser.deleteOne({ _id: userData.id });
+      await tokenService.removeToken(refreshToken);
     }
   }
 
