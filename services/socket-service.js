@@ -51,17 +51,25 @@ export class SocketService {
     return useReconnect.call(this, game, ws, user, msg);
   }
 
-  sendOnline() {
+  sendOnline(ws) {
     console.log("online");
     const msg = {};
     msg.method = "online";
     let count = 0;
+    const names = [];
 
-    this.info.clients.forEach((sum, client) => {
-      count++
+    this.info.clients.forEach((client) => {
+      if (client.socketName) {
+        names.push(client.socketName);
+      } else {
+        names.push("Unknown user");
+      }
+
+      count++;
     });
 
     msg.count = count - 1;
+    msg.names = names;
 
     this.info.clients.forEach((client) => {
       client.send(JSON.stringify(msg));

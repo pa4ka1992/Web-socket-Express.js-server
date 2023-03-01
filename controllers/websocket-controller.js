@@ -7,14 +7,12 @@ export class WsController {
     ws.game = {};
     ws.socketName = "";
 
-    this.service.sendOnline();
+    this.service.sendOnline(ws);
 
     this.service.mailing(ws, "common");
 
     ws.on("message", (msg) => {
       msg = JSON.parse(msg.toString());
-
-      console.log(msg);
 
       switch (msg.method) {
         case "connection":
@@ -48,7 +46,7 @@ export class WsController {
     });
 
     ws.on("close", () => {
-      this.service.sendOnline()
+      this.service.sendOnline(ws)
 
 
       const msg = {};
