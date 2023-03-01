@@ -5,9 +5,6 @@ export class WsController {
 
   webSocketHandler(ws, req) {
     ws.game = {};
-    ws.socketName = "";
-
-    this.service.sendOnline(ws);
 
     this.service.mailing(ws, "common");
 
@@ -41,6 +38,7 @@ export class WsController {
 
         case "setsocketname":
           ws.socketName = msg.socketName;
+          this.service.sendOnline(ws);
           break;
       }
     });

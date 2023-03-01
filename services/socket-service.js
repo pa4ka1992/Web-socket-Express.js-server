@@ -59,6 +59,7 @@ export class SocketService {
     const names = [];
 
     this.info.clients.forEach((client) => {
+      console.log(client.socketName);
       if (client.socketName) {
         names.push(client.socketName);
       } else {
