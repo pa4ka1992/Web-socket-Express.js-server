@@ -16,7 +16,6 @@ class GameService {
     let gameId;
 
     if (withFriend && friendName) {
-      console.log("Подключение к другу");
       const friend = users.find((user) => friendName === user.name);
 
       if (friend) {
@@ -35,7 +34,6 @@ class GameService {
     }
 
     if (withFriend && !friendName) {
-      console.log("Создать с другом");
       await ModelUser.updateOne(
         { _id: userData.id },
         { isWaitingGame: false, gameId: userData.id }
@@ -55,7 +53,6 @@ class GameService {
     }
 
     if (opponent) {
-      console.log("Подключение к рандому");
       gameId = opponent.gameId;
 
       await ModelUser.updateOne(
@@ -65,7 +62,6 @@ class GameService {
 
       await ModelUser.updateOne({ _id: userData.id }, { gameId: gameId });
     } else {
-      console.log("Создать с рандомом");
       gameId = userData.id;
 
       await ModelUser.updateOne(

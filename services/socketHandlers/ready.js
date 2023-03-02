@@ -1,5 +1,4 @@
 export function sendReady(ws, msg) {
-  console.log("ready");
   const { nickName, gameId } = ws.game;
   const { field } = msg;
   const game = this.games[gameId];

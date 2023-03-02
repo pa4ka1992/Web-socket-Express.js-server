@@ -1,5 +1,4 @@
 export function useReconnect(game, ws, user, msg) {
-  console.log("reconnect");
   let replaceUser;
   let replaceIndex;
   let opponent;

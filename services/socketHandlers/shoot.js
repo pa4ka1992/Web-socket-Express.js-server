@@ -1,5 +1,4 @@
 export function sendShoot(ws, msg) {
-  console.log("shoot");
   const { nickName, gameId } = ws.game;
   const { shoot } = msg;
   const game = this.games[gameId];
@@ -30,7 +29,6 @@ export function sendShoot(ws, msg) {
   );
 
   if (isGameOver) {
-    console.log("gameover");
     msg.method = "gameover";
     msg.winner = nickName;
   }

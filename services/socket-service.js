@@ -52,14 +52,12 @@ export class SocketService {
   }
 
   sendOnline(ws) {
-    console.log("online");
     const msg = {};
     msg.method = "online";
     let count = 0;
     const names = [];
 
     this.info.clients.forEach((client) => {
-      console.log(client.socketName);
       if (client.socketName) {
         names.push(client.socketName);
       } else {
@@ -81,14 +79,17 @@ export class SocketService {
     const { gameId } = ws.game;
 
     this.info.clients.forEach((client) => {
+      const { socketName } = client;
+
       if (msg.method === "chat") {
-        console.log("chat");
         client.send(JSON.stringify(msg));
         return;
       }
 
       if (msg.method === "invite") {
-        if (client.socketName === msg.friend) {
+        const { friend, server } = msg;
+
+        if (socketName === friend || socketName === server) {
           client.send(JSON.stringify(msg));
           return;
         }

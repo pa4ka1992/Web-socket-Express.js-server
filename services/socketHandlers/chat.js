@@ -1,5 +1,4 @@
 export function sendChat(ws, msg) {
-  console.log("chat");
   const { mail } = msg;
   const { chatName, gameId, date } = mail;
   const dateShort = date.slice(0, 15);
@@ -15,7 +14,6 @@ export function sendChat(ws, msg) {
       this.latestDate = dateShort;
     }
 
-    console.log("commonmessage", msg.mail);
     this.commonChat.push(msg.mail);
   }
 
@@ -32,7 +30,6 @@ export function sendChat(ws, msg) {
       this.latestDate = dateShort;
     }
 
-    console.log("gamemessage", msg.mail);
     gameChat.push(msg.mail);
   }
 

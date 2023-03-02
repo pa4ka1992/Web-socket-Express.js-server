@@ -1,7 +1,6 @@
 import { ModelUser } from "../../models/user-model.js";
 
 export async function sendExit(ws, msg) {
-  console.log("exit");
   const { gameId } = ws.game;
 
   if (this.games.hasOwnProperty(`${gameId}`)) {

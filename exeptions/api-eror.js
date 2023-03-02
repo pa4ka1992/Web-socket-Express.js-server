@@ -16,10 +16,6 @@ export class ApiError extends Error {
     return new ApiError(401, "Пользователь не авторизован");
   }
 
-  static UnauthorizedError() {
-    return new ApiError(401, "Пользователь не авторизован");
-  }
-
   static DoubleNameError() {
     return new ApiError(401, "Пользователь с таким именем уже существует");
   }

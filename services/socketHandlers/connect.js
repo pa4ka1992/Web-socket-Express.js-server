@@ -21,7 +21,7 @@ export function sendConnect(ws, msg) {
 
     if (!isReconnect) {
       this.messageApplier("isAbleShoot", false, msg, ws);
-      msg.opponentName = game[0].nickName;
+      msg.opponentName = game[0].game.nickName;
 
       game.push(ws);
       game.forEach((wss) => {
