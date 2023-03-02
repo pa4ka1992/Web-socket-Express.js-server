@@ -1,7 +1,22 @@
 export function sendInvite(ws, msg) {
-  console.log("invite");
+  if (!msg.isFinded) {
+    let isExist = false;
 
-  msg.server = ws.socketName;
+    this.info.clients.forEach((client) => {
+      if (client.socketName === msg.friend) {
+        isExist = true;
+      }
+    });
+
+    if (!isExist) {
+      msg.isFinded = false;
+
+      ws.send(JSON.stringify(msg));
+      return;
+    }
+
+    msg.isFinded = true;
+  }
 
   this.connectBroadcast(ws, msg);
 }
