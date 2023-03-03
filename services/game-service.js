@@ -21,7 +21,7 @@ class GameService {
       if (friend) {
         await ModelUser.updateOne(
           { _id: userData.id },
-          { isWaitingGame: false, gameId: friend.gameId }
+          { isWaitingGame: false, gameId: friend._id.toString() }
         );
 
         return {
