@@ -1,5 +1,4 @@
 export function sendConnect(ws, msg) {
-  console.log("connect");
   const { gameId, user } = msg;
 
   ws.game.gameId = gameId;
