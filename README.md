@@ -1,4 +1,4 @@
-# async-race-api
+# BattleShip
 Api for Rolling Scopes School task "RS-clone BattleShip by Power Rangers".
 
 ## Setup and Running
