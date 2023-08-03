@@ -3,7 +3,23 @@ Api for Rolling Scopes School task "RS-clone BattleShip by Power Rangers".
 
 ## Setup and Running
 
-- You can send requests to the address: `https://battle-ship.up.railway.app/api`.
+### Setup .env variables
+```
+PORT=server-port
+
+DB_URL=mongodb+srv:example
+
+CLIENT_URL=any-dev-url
+
+CLIENT_URL2=any-dev-url
+
+DEPLOY_URL=https://battle-ships-example
+
+SECRET_ACCESS=any-secret-access-token-key
+
+SECRET_REFRESH=any-secret-refresh-token-key
+```
+You can send requests to the address: `https://battle-ship.up.railway.app/api`.
 
 ## Usage
 
